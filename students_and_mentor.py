@@ -21,17 +21,97 @@ class Student:
             lecturer.grades[course] += [grade]
         else:
             lecturer.grades[course] = [grade]
-        
+
+    def _avg_grade(self):
+        all_grades = []
+        for grades_list in self.grades.values():
+            all_grades.extend(grades_list)
+        if not all_grades:
+            return None
+        return sum(all_grades) / len(all_grades)
+
+    def __str__(self):
+        avg = self._avg_grade()
+        if avg is None:
+            avg_text = "нет оценок"
+        else:
+            avg_text = f"{avg:.1f}"
+
+        if self.courses_in_progress:
+            in_progress = ", ".join(self.courses_in_progress)
+        else:
+            in_progress = "нет"
+
+        if self.finished_courses:
+            finished = ", ".join(self.finished_courses)
+        else:
+            finished = "нет"
+
+        return (f"Имя: {self.name}\n"
+                f"Фамилия: {self.surname}\n"
+                f"Средняя оценка за домашние задания: {avg_text}\n"
+                f"Курсы в процессе изучения: {in_progress}\n"
+                f"Завершенные курсы: {finished}")
+
+    def _avg_grade_or_zero(self):
+        avg = self._avg_grade()
+        return avg if avg is not None else 0.0
+
+    def __lt__(self, other):
+        if not isinstance(other, Student):
+            return NotImplemented
+        return self._avg_grade_or_zero() < other._avg_grade_or_zero()
+
+    def __eq__(self, other):
+        if not isinstance(other, Student):
+            return NotImplemented
+        return self._avg_grade_or_zero() == other._avg_grade_or_zero()
+
+
 class Mentor:
     def __init__(self, name, surname):
         self.name = name
         self.surname = surname
         self.courses_attached = []
 
+
 class Lecturer(Mentor):
     def __init__(self, name, surname):
         super().__init__(name, surname)
         self.grades = {}
+
+    def _avg_grade(self):
+        all_grades = []
+        for grades_list in self.grades.values():
+            all_grades.extend(grades_list)
+        if not all_grades:
+            return None
+        return sum(all_grades) / len(all_grades)
+
+    def __str__(self):
+        avg = self._avg_grade()
+        if avg is None:
+            avg_text = "нет оценок"
+        else:
+            avg_text = f"{avg:.1f}"
+        return (f"Имя: {self.name}\n"
+                f"Фамилия: {self.surname}\n"
+                f"Средняя оценка за лекции: {avg_text}")
+
+    def _avg_grade_or_zero(self):
+        avg = self._avg_grade()
+        return avg if avg is not None else 0.0
+
+    def __lt__(self, other):
+        if not isinstance(other, Lecturer):
+            return NotImplemented
+        return self._avg_grade_or_zero() < other._avg_grade_or_zero()
+
+    def __eq__(self, other):
+        if not isinstance(other, Lecturer):
+            return NotImplemented
+        return self._avg_grade_or_zero() == other._avg_grade_or_zero()
+
 
 class Reviewer(Mentor):
     def rate_hw(self, student, course, grade):
@@ -43,17 +123,9 @@ class Reviewer(Mentor):
         else:
             return 'Ошибка'
 
-lecturer = Lecturer('Иван', 'Иванов')
-reviewer = Reviewer('Пётр', 'Петров')
-student = Student('Алёхина', 'Ольга', 'Ж')
+    def __str__(self):
+        return f"Имя: {self.name}\nФамилия: {self.surname}"
 
-student.courses_in_progress += ['Python', 'Java']
-lecturer.courses_attached += ['Python', 'C++']
-reviewer.courses_attached += ['Python', 'C++']
 
-print(student.rate_lecture(lecturer, 'Python', 7))   # None
-print(student.rate_lecture(lecturer, 'Java', 8))     # Ошибка
-print(student.rate_lecture(lecturer, 'С++', 8))      # Ошибка
-print(student.rate_lecture(reviewer, 'Python', 6))   # Ошибка
-print(lecturer.grades)  # {'Python': [7]}
+
 
